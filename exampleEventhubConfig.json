@@ -1,0 +1,9 @@
+{
+    "creds": {
+        "namespace": "<namespace>",
+        "eventhubName": "<eventhubname>",
+        "sasKeyName": "<sas key name>",
+        "sasKey": "<sas key>"
+    },
+    "maxBatchWaitTimeMs": 2000
+}

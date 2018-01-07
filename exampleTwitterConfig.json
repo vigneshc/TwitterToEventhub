@@ -1,0 +1,9 @@
+{
+    "trackTerms": "comma,separated,trace,terms",
+    "creds": {
+        "consumerSecret": "<consumer secret>",
+        "token": "<token>",
+        "tokenSecret": "<token secret>",
+        "consumerKey": "<consumer key>"
+    }
+}
