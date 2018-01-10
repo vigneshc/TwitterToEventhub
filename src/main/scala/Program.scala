@@ -2,20 +2,24 @@ package TwitterToEventHub
 
 object Main extends App {
 	args.length match {
-		case 3 => {
+		case 4 => {
 			val twitterConfig = ConfigParser.ParseTwitterStreamConfig(args(0))
-			val eventhubConfig = ConfigParser.ParseEventhubSenderConfig(args(1))
+			val eventSender = args(1).toLowerCase match {
+				case "eventhub" => new EventhubSender(ConfigParser.ParseEventhubSenderConfig(args(2)), new RoundRobinPartitioner(2))
+				case _ => new FileSender(args(2))
+			}
+			
 			val eventGenerator = new EventGenerator(
 				new TwitterStream(twitterConfig, 1000),
-				new EventhubSender(eventhubConfig, new RoundRobinPartitioner(2)))
+				eventSender)
 
-			eventGenerator.run(args(2).toInt)
+			eventGenerator.run(args(3).toInt)
 		}
 
 		case _ => this.Help()
 	}
 
 	private def Help(): Unit = {
-		println("TwitterToEventHub <twitterConfigJsonFile> <eventHubConfigJsonFile> <secondsToRun>")
+		println("TwitterToEventHub <twitterConfigJsonFile> eventhub|any <eventHubConfigJsonFile>|<destFile> <secondsToRun>")
 	}
 }
