@@ -22,6 +22,7 @@ class TwitterStream(config: TwitterStreamConfig, queueSize: Int) extends EventRe
     def Open(): Unit = {
         val endpoint = new StatusesFilterEndpoint();
         endpoint.trackTerms(Lists.newArrayList(this.config.trackTerms));
+        endpoint.languages(Lists.newArrayList(this.config.languages.getOrElse("en")))
         val auth = new OAuth1(
             this.config.creds.consumerKey,
             this.config.creds.consumerSecret,

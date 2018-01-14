@@ -1,5 +1,6 @@
 {
     "trackTerms": "comma,separated,trace,terms",
+    "languages": "comma,separated,language codes",
     "creds": {
         "consumerSecret": "<consumer secret>",
         "token": "<token>",
