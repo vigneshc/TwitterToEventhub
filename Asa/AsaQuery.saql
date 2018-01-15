@@ -17,7 +17,7 @@ WITH Tweets1 AS
 ),
 
 --cross apply with three arrays - user mentions, hash tags and unique words. Creates multiple rows per record.
-[TweetsAndEntities] AS
+[TweetsAndEntitiesWithAllWords] AS
 (
 SELECT
     [Tweets1].[PartitionId],
@@ -32,6 +32,20 @@ FROM
     CROSS APPLY GetArrayElements([Tweets1].[HashTagsArray]) as hashtags
     CROSS APPLY GetArrayElements([Tweets1].[UserMentionsArray]) as userMentions
     CROSS APPLY GetArrayElements([Tweets1].[UniqueWords]) as tweetWord
+),
+
+[TweetsAndEntities] AS
+(
+SELECT 
+    [TweetsAndEntitiesWithAllWords].* 
+FROM 
+    [TweetsAndEntitiesWithAllWords]
+LEFT JOIN
+    stopWordsBlob
+ON
+    [TweetsAndEntitiesWithAllWords].word = stopWordsBlob.Word
+WHERE
+    stopWordsBlob.Word IS NULL
 ),
 
 --Tweet count for a (#hashtag, @usermention) combination per partition.
@@ -60,7 +74,7 @@ SELECT
     [HashTag],
     [MentionedTwitterHandle],
     Sum([TweetCount]) [TweetCount],
-    3 [QueryVersion]
+    5 [QueryVersion]
 FROM
     [HashTagUserMentionPartitionWindowCounts]
 GROUP BY
@@ -93,7 +107,7 @@ SELECT
     [HashTag],
     [word],
     Sum([TweetCount]) [TweetCount],
-    3 [QueryVersion]
+    5 [QueryVersion]
 FROM
     [HashTagWordPartitionWindowCounts]
 GROUP BY
@@ -128,7 +142,7 @@ SELECT
     [MentionedTwitterHandle],
     [word],
     Sum([TweetCount]) [TweetCount],
-    3 [QueryVersion]
+    5 [QueryVersion]
 FROM
     [UserMentionWordPartitionWindowCounts]
 GROUP BY
@@ -169,14 +183,14 @@ SELECT
     [Old].[WindowTime] [OldWindowTime],
     [Old].[HashTag],
     [Old].[TweetCount],
-    3 [QueryVersion]
+    5 [QueryVersion]
 FROM
     [GlobalTopHashTagCounts] as [Old]
-LEFT JOIN
+LEFT OUTER JOIN
     [GlobalTopHashTagCounts] as [New]
 ON
     [Old].[HashTag] = [New].[HashTag]
-    AND DATEDIFF(minute, [Old], [New]) BETWEEN 0 AND 15
+    AND DATEDIFF(minute, [Old], [New]) BETWEEN 15 AND 30
 WHERE
     [New].HashTag is null
 )
@@ -187,3 +201,7 @@ SELECT * INTO [HashTagWordGlobalWindowCounts] FROM HashTagWordGlobalWindowCounts
 SELECT * INTO [HashTagUserMentionGlobalWindowCounts] FROM HashTagUserMentionGlobalWindowCountsQuery
 SELECT * INTO [PopularHashTagsThatAreNoLongerMentioned] FROM PopularHashTagsThatAreNoLongerMentionedQuery
 
+/*
+-- Query to copy data to Data lake.
+SELECT *, System.Timestamp [AsaTimeStamp] into datalake from InputEventhub
+*/

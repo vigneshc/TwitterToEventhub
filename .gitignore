@@ -7,3 +7,7 @@ project/project/target/
 *.log
 ExampleTweet.json
 .vscode/
+twittertoeventhubgithub_settings.json
+Usql/CsharpCode/bin/
+Usql/CsharpCode/obj/
+Usql/CsharpCode/*.cs

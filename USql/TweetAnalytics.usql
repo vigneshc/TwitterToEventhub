@@ -1,0 +1,53 @@
+
+CREATE DATABASE IF NOT EXISTS TwitterApp;
+USE DATABASE TwitterApp;
+
+CREATE ASSEMBLY IF NOT EXISTS NewtonsoftJson FROM "/TwitterApp/CodeReferences/Newtonsoft.Json.dll";
+REFERENCE ASSEMBLY NewtonsoftJson;
+
+DECLARE @textCorpusFile string = "/TwitterApp/CricketTweets.json";
+DECLARE @topWordsOutputFile string = "/TwitterApp/Top1000Words.csv";
+
+@input = 
+EXTRACT 
+    tweetText string,
+    tweetId string,
+    hashTags SQL.ARRAY<string>,
+    userMentions SQL.ARRAY<string>,
+    timestampMs string,
+    language string
+FROM
+    @textCorpusFile
+USING
+    new TweetAnalytics.JsonExtractor();
+
+@tweetIdAndWord = 
+SELECT 
+    Input.tweetId AS [TweetId],
+    word 
+FROM 
+    @input AS Input
+CROSS APPLY EXPLODE(TweetAnalytics.TweetCleanup.GetNormalizedWords(Input.tweetText)) AS words(word);
+
+@wordCounts = 
+SELECT 
+    word, 
+    COUNT(DISTINCT [TweetId]) AS [TweetCount] 
+FROM
+    @tweetIdAndWord
+GROUP BY
+    word
+ORDER BY 
+    [TweetCount] DESC 
+FETCH 1000 ROWS;
+
+
+OUTPUT 
+    @wordCounts 
+TO 
+    @topWordsOutputFile
+USING 
+    Outputters.Csv();
+    
+
+
