@@ -7,6 +7,8 @@ using Microsoft.Analytics.Types.Sql;
 using Newtonsoft.Json;
 
 namespace TweetAnalytics {
+
+    // Twitter streams api returns json in below schema. It has several additional fields that are ignored for the purposes of stop words.
     public class Tweet {
 
         public string id_str { get; set; }

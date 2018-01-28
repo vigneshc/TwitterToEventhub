@@ -2,12 +2,15 @@
 CREATE DATABASE IF NOT EXISTS TwitterApp;
 USE DATABASE TwitterApp;
 
+// Requires below dll to be uploaded to data lake store.
 CREATE ASSEMBLY IF NOT EXISTS NewtonsoftJson FROM "/TwitterApp/CodeReferences/Newtonsoft.Json.dll";
 REFERENCE ASSEMBLY NewtonsoftJson;
 
+// Requires text corpus file to be uploaded to below location.
 DECLARE @textCorpusFile string = "/TwitterApp/CricketTweets.json";
 DECLARE @topWordsOutputFile string = "/TwitterApp/Top1000Words.csv";
 
+// Extract tweets to below schema using custom extractor. Look at TweetAnalytics.usql.cs file for details about TweetAnalytics.JsonExtractor
 @input = 
 EXTRACT 
     tweetText string,
@@ -21,6 +24,7 @@ FROM
 USING
     new TweetAnalytics.JsonExtractor();
 
+// Create one row per (TweetId, word) pair. Uses GetNormalizedWords() from code behind file.
 @tweetIdAndWord = 
 SELECT 
     Input.tweetId AS [TweetId],
@@ -29,6 +33,7 @@ FROM
     @input AS Input
 CROSS APPLY EXPLODE(TweetAnalytics.TweetCleanup.GetNormalizedWords(Input.tweetText)) AS words(word);
 
+// Select top 1000 words.
 @wordCounts = 
 SELECT 
     word, 
@@ -41,7 +46,7 @@ ORDER BY
     [TweetCount] DESC 
 FETCH 1000 ROWS;
 
-
+// Output top words to a file.
 OUTPUT 
     @wordCounts 
 TO 

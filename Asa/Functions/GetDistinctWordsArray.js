@@ -54,6 +54,7 @@ function main(text) {
         return result
     }
 
+    // enumerate words, remove trim punctuations to convert words like too!!, too! to too. Also remove numbers.
     for (var i = 0; i < words.length; i++) {
         var word = words[i]
         if (word.length != 0
@@ -68,5 +69,6 @@ function main(text) {
         }
     }
 
+    // get distinct words.
     return Object.keys(distinctWords);
 }

@@ -39,7 +39,7 @@ FROM
 SELECT 
     [TweetsAndEntitiesWithAllWords].* 
 FROM 
-    [TweetsAndEntitiesWithAllWords]
+    [TweetsAndEntitiesWithAllWords]  PARTITION BY PartitionId
 LEFT JOIN
     stopWordsBlob
 ON

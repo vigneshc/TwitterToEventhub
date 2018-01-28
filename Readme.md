@@ -1,4 +1,12 @@
-Example scala code to read from twitter stream [api](https://developer.twitter.com/en/docs/tutorials/consuming-streaming-data) and send to either eventhub or store in a local file.
+Contains below tools to do analytics over twitter stream.
+
+1. Scala code to read from twitter stream and send to either local file or Eventhub.
+2. U-SQL query to compute stop words, under USql/ folder.
+3. Azure Stream Analytics query to compute windowed aggregates, under Asa/ folder.
+
+USql/ folder and Asa/ folder has appropriate Readme.md files.
+
+This folder contains example scala code to read from twitter stream [api](https://developer.twitter.com/en/docs/tutorials/consuming-streaming-data) and send to either eventhub or store in a local file.
 Uses [Twitter Hosebird client](https://github.com/twitter/hbc) for reading from twitter.
 Uses [Azure Eventhubs Java](https://github.com/Azure/azure-event-hubs-java) for sending events to EventHub.
 Sends line separated json response to eventhub in GZip compressed format.

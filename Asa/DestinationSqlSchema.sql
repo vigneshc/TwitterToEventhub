@@ -7,6 +7,8 @@ create table HashTagUserMentionGlobalWindowCounts
     [QueryVersion] tinyint
 );
 
+create index HashTagUserMentionGlobalWindowCounts_WindowTime on HashTagUserMentionGlobalWindowCounts(WindowTime);
+
 create table HashTagWordGlobalWindowCounts
 (
     [WindowTime] Datetime2,
@@ -15,6 +17,7 @@ create table HashTagWordGlobalWindowCounts
     [TweetCount] bigint,
     [QueryVersion] tinyint
 );
+create index HashTagWordGlobalWindowCounts_WindowTime on HashTagWordGlobalWindowCounts(WindowTime);
 
 create table UserMentionWordGlobalWindowCounts
 (
@@ -24,6 +27,7 @@ create table UserMentionWordGlobalWindowCounts
     [TweetCount] bigint,
     [QueryVersion] tinyint
 );
+create index UserMentionWordGlobalWindowCounts_WindowTime on UserMentionWordGlobalWindowCounts(WindowTime);
 
 create table PopularHashTagsThatAreNoLongerMentioned
 (
@@ -33,3 +37,5 @@ create table PopularHashTagsThatAreNoLongerMentioned
     [TweetCount] bigint,
     [QueryVersion] tinyint
 );
+
+create index PopularHashTagsThatAreNoLongerMentioned_JoinTimeStamp on PopularHashTagsThatAreNoLongerMentioned(JoinTimeStamp);
