@@ -12,15 +12,20 @@ Uses [Azure Eventhubs Java](https://github.com/Azure/azure-event-hubs-java) for 
 Sends line separated json response to eventhub in GZip compressed format.
 
 **Compiling**
+
 Requires https://www.scala-sbt.org/ 
+
 sbt
+
 compile
-run  <twitterConfigJsonFile> <eventHubConfigJsonFile> <secondsToRun>
+
+```run  <twitterConfigJsonFile> <eventHubConfigJsonFile> <secondsToRun>```
 
 Packaged jar file can also be run directly.
 
 **Usage**
-TwitterToEventHub <twitterConfigJsonFile> eventhub|any <eventHubConfigJsonFile>|<destFile> <secondsToRun>
+
+`TwitterToEventHub <twitterConfigJsonFile> eventhub|any <eventHubConfigJsonFile>|<destFile> <secondsToRun>`
 
 *Twitter Config Format:*
 ```javascript
@@ -51,6 +56,7 @@ For eventhub, next argument is a file containing eventhub config in below json f
     "maxBatchWaitTimeMs": 2000
 }
 ```
+
 *maxBatchWaitTimeMs* is the maximum amount of time to batch events locally before sending it to event hub. Increasing this increases decreases the number of EventHub messages at the cost of latency. 
 
 For file, destFile is the file in which tweet responses are written to. Responses are written as json arrays.
