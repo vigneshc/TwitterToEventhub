@@ -1,5 +1,8 @@
 // gets distinct words that aren't hashtags or usermentions or stopWords
 function main(text) {
+    if(text == undefined){
+        return text
+    }
     // update this list for additional stop words
     var stopWords = {
         'the': 0,

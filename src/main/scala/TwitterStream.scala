@@ -37,7 +37,6 @@ class TwitterStream(config: TwitterStreamConfig, queueSize: Int) extends EventRe
         .build();
         
         this.twitterClient.connect()
-        println("Connected to Twitter stream with trackWords: " + this.config.trackTerms)
     }
 
     def Close(): Unit = this.twitterClient.stop();

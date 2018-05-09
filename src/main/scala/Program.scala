@@ -6,6 +6,7 @@ object Main extends App {
 			val twitterConfig = ConfigParser.ParseTwitterStreamConfig(args(0))
 			val eventSender = args(1).toLowerCase match {
 				case "eventhub" => new EventhubSender(ConfigParser.ParseEventhubSenderConfig(args(2)), new RoundRobinPartitioner(2))
+				case "console" => new ConsoleSender()
 				case _ => new JsonFileSender(args(2))
 			}
 			
@@ -20,6 +21,6 @@ object Main extends App {
 	}
 
 	private def Help(): Unit = {
-		println("TwitterToEventHub <twitterConfigJsonFile> eventhub|any <eventHubConfigJsonFile>|<destFile> <secondsToRun>")
+		println("TwitterToEventHub <twitterConfigJsonFile> eventhub|console|any <eventHubConfigJsonFile>|<destFile> <secondsToRun>")
 	}
 }

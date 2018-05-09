@@ -31,7 +31,6 @@ class EventGenerator[TEventType](eventReceiver: EventReceiver[TEventType], event
 {
     // generates events for 'seconds'. If seconds is -1, runs forever.
     def run(seconds: Int): Unit = {
-        println("Running for seconds: " + seconds)
         this.eventReceiver.Open()
         val startTime: Long = System.currentTimeMillis
         val ms = seconds * 1000
@@ -43,12 +42,9 @@ class EventGenerator[TEventType](eventReceiver: EventReceiver[TEventType], event
             }
         }
 
-        println("Close receiver and flushing sender")
         
         this.eventReceiver.Close()
         this.eventSender.Flush()
         this.eventSender.Close()
-        
-        println("Completed")
     }
 }

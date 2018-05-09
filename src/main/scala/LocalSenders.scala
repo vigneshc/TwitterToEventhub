@@ -13,18 +13,12 @@ class ConsoleSender() extends EventSender[String]{
 }
 
 class JsonFileSender(fileName: String) extends EventSender[String]{
-    println("Writing to file: " + fileName)
     val writer = new java.io.BufferedWriter(new java.io.OutputStreamWriter(new java.io.FileOutputStream(fileName)))
-    writer.write("[", 0, 1)
 
     var count = 0
     override def Send(e: String): Unit = {
-        if(this.count > 0)
-        {
-            writer.write(",", 0, 1)
-        }
-
         writer.write(e, 0, e.length)
+        writer.newLine()
         this.count = this.count + 1
     }
 
@@ -35,8 +29,6 @@ class JsonFileSender(fileName: String) extends EventSender[String]{
     override def RemainingTimeInBatchMs(): Long = 2000
 
     override def Close(): Unit = { 
-        writer.write("]", 0, 1)
         writer.close()
-        println("Wrote Records: " + this.count)
     }
 }
