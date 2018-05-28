@@ -1,0 +1,52 @@
+WITH InputTweets AS
+(
+SELECT
+    id_str,
+    text,
+    in_reply_to_status_id_str,
+    [user].[followers_count] [TweeterFollowerCount],
+    new,
+    retweeted_status,
+    entities
+FROM
+    InputTweetSource
+),
+--Select one row for every hashtag, along with tweeter's follower count
+HashTags AS
+(
+SELECT
+    System.Timestamp [TimeStamp],
+    [InputTweets].[TweeterFollowerCount],
+    hashtags.ArrayValue.text as [HashTag]
+FROM
+    InputTweets
+CROSS APPLY 
+    GetArrayElements([InputTweets].entities.hashtags) as hashtags
+),
+--Get total number of occurences
+HashTagWindow AS
+(
+SELECT
+    System.Timestamp [WindowTime],
+    [HashTag],
+    sum([TweeterFollowerCount]) [TotalTweeterFollowerCount],
+    COUNT(*) [TotalTweets]
+FROM
+    HashTags
+GROUP BY
+    HoppingWindow(mi, 15, 1),
+    [HashTag]
+),
+--Select top hashtags
+TopHashTags AS
+(
+SELECT
+    System.Timestamp [WindowTime],
+    UDF.Stringify(COLLECTTOP(10) OVER(ORDER BY TotalTweeterFollowerCount DESC)) TopHashTags
+FROM
+    HashTagWindow
+GROUP BY
+    TUMBLINGWINDOW(mi, 1)
+)
+
+SELECt * INTO TopHashTagsOutput FROM TopHashTags

@@ -1,8 +1,6 @@
 package TwitterToEventHub
 
 import java.io.ByteArrayOutputStream
-import java.io.OutputStreamWriter
-import java.nio.charset._;
 import java.util.zip.GZIPOutputStream;
 
 trait EventBatcher[TEType, TBatchType]{

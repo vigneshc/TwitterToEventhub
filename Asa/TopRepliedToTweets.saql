@@ -1,0 +1,70 @@
+WITH InputTweets AS
+(
+SELECT
+    id_str,
+    text,
+    in_reply_to_status_id_str,
+    retweeted_status,
+    [user].[followers_count] [TweeterFollowerCount]
+FROM
+    InputTweetSource
+),
+--Select tweets that are replies to other tweets.
+Replies AS
+(
+SELECT
+  *
+FROM 
+    InputTweets
+WHERE
+    retweeted_status IS  NULL
+    AND in_reply_to_status_id_str IS NOT NULL
+),
+--Self-join and get (reply, original) pair along with replier follower count
+TweetAndReply AS
+(
+SELECT
+    System.TimeStamp [TimeStamp],
+    Replies.id_str ReplyTweetId,
+    Replies.text ReplyText,
+    Replies.[TweeterFollowerCount] [ReplyTweeterFollowerCount],
+    InputTweets.id_str OriginalTweetId,
+    InputTweets.text OriginalText
+FROM
+    Replies
+JOIN
+    InputTweets
+ON
+    --consider replies within 30 minutes, -2 for potential time skew.
+    DATEDIFF(mi, Replies, InputTweets) BETWEEN -2 AND 30
+    AND Replies.in_reply_to_status_id_str = InputTweets.id_str
+),
+RepliesCount AS
+(
+SELECT
+    System.Timestamp [WindowTime],
+    OriginalTweetId,
+    OriginalText,
+    COUNT(*) NumberOfReplies,
+    --Get 2 example replies by most influential follower. Convert to string, to store to flat table.
+    UDF.Stringify(COLLECTTOP(2) OVER (ORDER BY [ReplyTweeterFollowerCount] DESC))  ExampleRepliesArray
+FROM
+    TweetAndReply
+GROUP BY
+    HOPPINGWINDOW(mi, 15, 1),
+    OriginalTweetId,
+    OriginalText
+),
+--Get top 5 Replied to tweets.
+TopReplies AS
+(
+SELECT
+    System.Timestamp [WindowTime],
+    UDF.Stringify(COLLECTTOP(5) OVER(ORDER BY NumberOfReplies DESC)) TopRepliedTweets
+FROM
+    RepliesCount
+GROUP BY
+    TUMBLINGWINDOW(mi, 1)
+)
+
+SELECT * INTO TopRepliesOutput FROM TopReplies

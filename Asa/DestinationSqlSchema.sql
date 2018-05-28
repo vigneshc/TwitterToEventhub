@@ -1,41 +1,33 @@
-create table HashTagUserMentionGlobalWindowCounts
+create table Top5RetweetedTweets
 (
     [WindowTime] Datetime2,
-    [HashTag] nvarchar(100),
-    [MentionedTwitterHandle] nvarchar(100),
-    [TweetCount] bigint,
-    [QueryVersion] tinyint
+    [TweetId] nvarchar(30),
+    [Text] nvarchar(1000),
+    [RetweetCount] bigint
 );
 
-create index HashTagUserMentionGlobalWindowCounts_WindowTime on HashTagUserMentionGlobalWindowCounts(WindowTime);
+create index Top5RetweetedTweets_WindowTime on Top5RetweetedTweets(WindowTime);
 
-create table HashTagWordGlobalWindowCounts
+create table TopUserMentions
 (
+    [RecordNumber] bigint IDENTITY(1, 1),
     [WindowTime] Datetime2,
-    [HashTag] nvarchar(100),
-    [word] nvarchar(200),
-    [TweetCount] bigint,
-    [QueryVersion] tinyint
+    [TopUserMentions] nvarchar(max)
 );
-create index HashTagWordGlobalWindowCounts_WindowTime on HashTagWordGlobalWindowCounts(WindowTime);
+create index TopUserMentions_WindowTime on TopUserMentions(WindowTime);
 
-create table UserMentionWordGlobalWindowCounts
+create table TopHashTags
 (
+    [RecordNumber] bigint IDENTITY(1, 1),
     [WindowTime] Datetime2,
-    [MentionedTwitterHandle] nvarchar(100),
-    [word] nvarchar(200),
-    [TweetCount] bigint,
-    [QueryVersion] tinyint
+    [TopHashTags] nvarchar(max)
 );
-create index UserMentionWordGlobalWindowCounts_WindowTime on UserMentionWordGlobalWindowCounts(WindowTime);
+create index TopHashTags_WindowTime on TopHashTags(WindowTime);
 
-create table PopularHashTagsThatAreNoLongerMentioned
+create table TopReplies
 (
-    [JoinTimeStamp] Datetime2,
-    [OldWindowTime] Datetime2,
-    [HashTag] nvarchar(100),
-    [TweetCount] bigint,
-    [QueryVersion] tinyint
+    [RecordNumber] bigint IDENTITY(1, 1),
+    [WindowTime] Datetime2,
+    [TopRepliedTweets] nvarchar(max)
 );
-
-create index PopularHashTagsThatAreNoLongerMentioned_JoinTimeStamp on PopularHashTagsThatAreNoLongerMentioned(JoinTimeStamp);
+create index TopReplies_WindowTime on TopReplies(WindowTime);

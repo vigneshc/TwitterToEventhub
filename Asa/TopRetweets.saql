@@ -1,0 +1,56 @@
+WITH InputTweets AS
+(
+SELECT
+    id_str,
+    text,
+    in_reply_to_status_id_str,
+    retweeted_status
+FROM
+    InputTweetSource
+),
+ReTweetCounts AS
+(
+SELECT
+  System.TimeStamp [WindowTime],
+  retweeted_status.id_str TweetId,
+  retweeted_status.text Text,
+  --retweet_count is probably the approximate retweet count when the current tweet was posted as a retweet.
+  MAX(retweeted_status.retweet_count) RetweetCount
+FROM 
+    InputTweets
+WHERE
+    --only select retweeted tweets.
+    retweeted_status IS NOT NULL
+GROUP BY
+    --Emit one row per retweeted tweet every minute, look back 15 minutes.
+    HOPPINGWINDOW(mi, 15, 1),
+    retweeted_status.id_str,
+    retweeted_status.text
+),
+Top5Retweets AS
+(
+SELECT
+    System.Timestamp [WindowTime],
+    --get top 5 retweeted tweets.
+    COLLECTTOP(5) OVER (ORDER BY RetweetCount DESC) as Top5
+FROM
+    RetweetCounts
+GROUP BY
+    --Previous query (RetweetCounts) outputs one event for every retweeted id every minute
+    --With that, below tumbling window achieves top5 over 15 minute window and hops every minute
+    TUMBLINGWINDOW(mi, 1)
+),
+--Use cross apply to flatten top5 array into rows.
+Top5RetweetsFlat AS
+(
+SELECT
+    System.Timestamp [WindowTime],
+    Top5Elements.ArrayValue.value.TweetId TweetId,
+    Top5Elements.ArrayValue.value.Text Text,
+    CAST(Top5Elements.ArrayValue.value.RetweetCount AS BIGINT) RetweetCount
+FROM 
+    Top5Retweets
+CROSS APPLY GetArrayElements(Top5Retweets.Top5) AS Top5Elements
+)
+
+SELECT * INTO Top5RetweetedTweetsOutput FROM Top5RetweetsFlat

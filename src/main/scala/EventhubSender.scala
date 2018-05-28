@@ -1,6 +1,5 @@
 package TwitterToEventHub
 
-import java.io.IOException;
 import com.microsoft.azure.eventhubs._;
 
 case class EventhubCreds(namespace: String, eventhubName: String, sasKeyName: String, sasKey: String){
@@ -24,8 +23,9 @@ class RoundRobinPartitioner[TEtype](partitionCount: Int) extends EventPartitione
 class EventhubSender(config: EventHubConfig, partitioner: EventPartitioner[String]) extends EventSender[String]{
      val maxEventSizeBytes = 256 * 1024  * 80 / 100
      val eventBatcher: EventBatcher[String, Array[Byte]] = new ByteArrayBatcher(maxEventSizeBytes, config.maxBatchWaitTimeMs)
-     val connStr: ConnectionStringBuilder = new ConnectionStringBuilder(config.creds.namespace, config.creds.eventhubName, config.creds.sasKeyName, config.creds.sasKey);
-     val ehClient: EventHubClient = EventHubClient.createFromConnectionStringSync(connStr.toString());
+     val ehClient: EventHubClient = EventHubClient.createFromConnectionStringSync(
+         new ConnectionStringBuilder(config.creds.namespace, config.creds.eventhubName, config.creds.sasKeyName, config.creds.sasKey).toString
+     );
      var eventCount:Long = 0
 
     override def Send(e: String): Unit = this.SendToEventhub(this.eventBatcher.Write(e))
@@ -45,7 +45,7 @@ class EventhubSender(config: EventHubConfig, partitioner: EventPartitioner[Strin
                 // TODO:- send async
                 this.ehClient.sendSync(new EventData(data))
                 this.eventCount = this.eventCount + 1
-                if(this.eventCount % 10 == 1)
+                if(this.eventCount % 50 == 1)
                 {
                     println("Sent :" + this.eventCount)
                 }

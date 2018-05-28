@@ -1,0 +1,48 @@
+WITH InputTweets AS
+(
+SELECT
+    id_str,
+    text,
+    in_reply_to_status_id_str,
+    [user].[followers_count] [TweeterFollowerCount],
+    retweeted_status,
+    entities
+FROM
+    InputTweetSource
+),
+UserMentions AS
+(
+SELECT
+    System.Timestamp [TimeStamp],
+    [InputTweets].[TweeterFollowerCount],
+    usermentions.ArrayValue.screen_name as [ScreenName]
+FROM
+    InputTweets
+CROSS APPLY 
+    GetArrayElements([InputTweets].entities.user_mentions) as usermentions
+),
+UsermentionWindow AS
+(
+SELECT
+    System.Timestamp [WindowTime],
+    [ScreenName],
+    sum([TweeterFollowerCount]) [TotalTweeterFollowerCount],
+    COUNT(*) [TotalTweets]
+FROM
+    UserMentions
+GROUP BY
+    HoppingWindow(mi, 15, 1),
+    [ScreenName]
+),
+TopUserMentions AS
+(
+SELECT
+    System.Timestamp [WindowTime],
+    UDF.Stringify(COLLECTTOP(10) OVER(ORDER BY TotalTweeterFollowerCount DESC)) TopUserMentions
+FROM
+    UsermentionWindow
+GROUP BY
+    TUMBLINGWINDOW(mi, 1)
+)
+
+SELECt * INTO TopUserMentionsOutput FROM TopUserMentions
