@@ -4,10 +4,13 @@ object Main extends App {
 	args.length match {
 		case 4 => {
 			val twitterConfig = ConfigParser.ParseTwitterStreamConfig(args(0))
-			val eventSender = args(1).toLowerCase match {
+			val targetType = args(1).toLowerCase
+			val eventSender =  targetType match {
 				case "eventhub" => new EventhubSender(ConfigParser.ParseEventhubSenderConfig(args(2)), new RoundRobinPartitioner(2))
 				case "console" => new ConsoleSender()
-				case _ => new JsonFileSender(args(2))
+				case "gziptextfile" => new JsonFileSender(args(2), true)
+				case "textfile" => new JsonFileSender(args(2), false)
+				case _ => throw new IllegalArgumentException(targetType)
 			}
 			
 			val eventGenerator = new EventGenerator(
@@ -21,6 +24,6 @@ object Main extends App {
 	}
 
 	private def Help(): Unit = {
-		println("TwitterToEventHub <twitterConfigJsonFile> eventhub|console|any <eventHubConfigJsonFile>|<destFile> <secondsToRun>")
+		println("TwitterToEventHub <twitterConfigJsonFile> eventhub|console|gzipTextFile|textFile <eventHubConfigJsonFile>|<destFile> <secondsToRun>")
 	}
 }
