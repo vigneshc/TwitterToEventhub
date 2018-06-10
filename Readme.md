@@ -3,7 +3,7 @@ This project contains example code for running continuous queries over twitter s
 Specifically it has
 
 1. Scala code to read from twitter stream and send to either local file or Eventhub.
-2. Azure Stream Analytics query to compute windowed aggregates, under Asa/ folder.
+2. Azure Stream Analytics query to compute windowed aggregates(overview diagram later in this page), under Asa/ folder.
 3. U-SQL query to compute stop words, under USql/ folder.
 
 This folder contains example scala code to read from twitter stream [api](https://developer.twitter.com/en/docs/tutorials/consuming-streaming-data) and send to either eventhub or store in a local file.
@@ -40,10 +40,13 @@ Create keys from [twitter apps](https://apps.twitter.com/) site.
 
 `trackTerms` and `languages` are according to the documentation [here](https://developer.twitter.com/en/docs/tweets/filter-realtime/guides/basic-stream-parameters)
 
-eventhub     -> eventhub sends to Eventhub.
-console      -> writes tweets to console.
-gzipTextFile -> writes gzipped json array of tweet responses to local file.
-textFile     -> writes json array of tweet responses to local file. 
+*eventhub*     -> eventhub sends to Eventhub.
+
+*console*      -> writes tweets to console.
+
+*gzipTextFile* -> writes gzipped json array of tweet responses to local file.
+
+*textFile*     -> writes json array of tweet responses to local file. 
 
 For eventhub, next argument is a file containing eventhub config in below json format.
 *Eventhub Config Format:*
@@ -72,6 +75,8 @@ Stream Analytics queries computes the following. All outputs consider 15 minutes
 2. Top 'x' Users mentioned in tweets that reached maximum users.
 3. Top 'x' retweets that reached maximum users.
 4. Top 'x' tweets that were replied to.
+
+![Streaming query overview](https://github.com/vigneshc/TwitterToEventhub/blob/master/Overview.svg)
 
 
 There is no warranty of any kind for the items in repository.
