@@ -1,6 +1,7 @@
 package TwitterToEventHub
 
 import com.microsoft.azure.eventhubs._;
+import java.util.concurrent._;
 
 case class EventhubCreds(namespace: String, eventhubName: String, sasKeyName: String, sasKey: String){
 }
@@ -23,9 +24,16 @@ class RoundRobinPartitioner[TEtype](partitionCount: Int) extends EventPartitione
 class EventhubSender(config: EventHubConfig, partitioner: EventPartitioner[String]) extends EventSender[String]{
      val maxEventSizeBytes = 256 * 1024  * 80 / 100
      val eventBatcher: EventBatcher[String, Array[Byte]] = new ByteArrayBatcher(maxEventSizeBytes, config.maxBatchWaitTimeMs)
-     val ehClient: EventHubClient = EventHubClient.createFromConnectionStringSync(
-         new ConnectionStringBuilder(config.creds.namespace, config.creds.eventhubName, config.creds.sasKeyName, config.creds.sasKey).toString
-     );
+     val executorService = Executors.newSingleThreadExecutor();
+     val ehClient: EventHubClient = EventHubClient.createSync(
+         new ConnectionStringBuilder()
+         .setNamespaceName(config.creds.namespace)
+         .setEventHubName(config.creds.eventhubName)
+         .setSasKeyName(config.creds.sasKeyName)
+         .setSasKey(config.creds.sasKey)
+         .toString,
+         executorService);
+         
      var eventCount:Long = 0
 
     override def Send(e: String): Unit = this.SendToEventhub(this.eventBatcher.Write(e))
@@ -35,7 +43,10 @@ class EventhubSender(config: EventHubConfig, partitioner: EventPartitioner[Strin
     override def RemainingTimeInBatchMs(): Long = this.eventBatcher.RemainingTimeInBatchMs()
 
     override def Close(): Unit = {
+        this.Flush()
+        println("Sent :" + this.eventCount)
         this.ehClient.close()
+        executorService.shutdown()
         this.eventBatcher.Close()
     }
 
@@ -43,9 +54,9 @@ class EventhubSender(config: EventHubConfig, partitioner: EventPartitioner[Strin
         d match {
             case Some(data) => {
                 // TODO:- send async
-                this.ehClient.sendSync(new EventData(data))
+                this.ehClient.sendSync(EventData.create(data))
                 this.eventCount = this.eventCount + 1
-                if(this.eventCount % 50 == 1)
+                if(this.eventCount % 100 == 1)
                 {
                     println("Sent :" + this.eventCount)
                 }

@@ -1,0 +1,28 @@
+```mermaid
+graph TD
+TwitterStream -->|jar executable| EventHub
+EventHub --> |asa input| InputTweetSource
+InputTweetSource --> |project| InputTweets
+
+InputTweets --> |CrossApply on entities.usermentions| UserMentions
+UserMentions --> |HoppingWindow| UsermentionWindow
+UsermentionWindow --> |TumblingWindow, CollectTop, Stringify| TopUserMentions
+TopUserMentions --> |sql output| TopUserMentionsOutput
+
+InputTweets --> |CrossApply on entities.hashtags| HashTags
+HashTags -->  |HoppingWindow| HashTagWindow
+HashTagWindow --> |Groupby TumblingWindow, CollectTop, Stringify| TopHashTags
+TopHashTags --> |sql output| TopHashTagsOutput
+
+InputTweets --> |Filter replies| Replies
+InputTweets --> |join| TweetAndReply
+Replies     --> |join| TweetAndReply
+TweetAndReply --> |HoppingWindow| RepliesCount
+RepliesCount --> |TumblingWindow, CollectTop, Stringify| TopReplies
+TopReplies --> TopRepliesOutput
+
+InputTweets --> |Filter Retweets, Group by HoppingWindow| RetweetCounts
+RetweetCounts --> |TumblingWindow, CollectTop| Top5Retweets
+Top5Retweets --> |CrossApply on CollectTop results| Top5RetweetsFlat
+Top5RetweetsFlat --> |Sql output| Top5RetweetsFlatOutput
+```

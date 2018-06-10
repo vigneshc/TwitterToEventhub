@@ -12,5 +12,5 @@ libraryDependencies += json4sJackson
 
 val eventhubGroupId = "com.microsoft.azure"
 val eventhubArtifactId = "azure-eventhubs"
-val eventhubVersion = "0.16.0-PREVIEW"
+val eventhubVersion = "1.0.1"
 libraryDependencies += eventhubGroupId % eventhubArtifactId % eventhubVersion

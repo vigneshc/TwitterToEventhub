@@ -1,6 +1,5 @@
 This folder contains a U-SQL script to get top 1000 words in the given text corpus. It is used to identify stop words.
-Stop words computed by this script is used as reference data for Stream Analytics query that computes top words per time window. 
-Script assumes files referenced in the script exists.
+Script assumes files referenced in the script exists in Azure Datalake account.
 
 Uses following features
 - Code behind file for extensibility.
